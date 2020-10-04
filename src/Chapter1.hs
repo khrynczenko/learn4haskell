@@ -479,7 +479,10 @@ Implement a function that returns the last digit of a given number.
 -}
 -- DON'T FORGET TO SPECIFY THE TYPE IN HERE
 lastDigit :: Integral a => a -> a
-lastDigit n = mod n 10
+lastDigit n
+    | n > (-10) && n < 10 = abs n
+    | n >= 0 = mod n 10
+    | otherwise = abs $ mod n (-10)
 
 
 {- |
@@ -634,10 +637,11 @@ specifying complex expressions.
 -}
 
 sumLast2 :: Integral a => a -> a
-sumLast2 n = lastDigit + secondLastDigit
+sumLast2 n = last + abs secondLastDigit
     where
-        lastDigit = mod n 10
-        secondLastDigit = div (mod n 100) 10
+        last = lastDigit n
+        modulo = if n < 0 then (-100) else 100
+        secondLastDigit = div (mod n (modulo)) (div modulo 10)
 
 
 {- |
@@ -659,7 +663,10 @@ aren't ready for this boss yet!
 -}
 
 firstDigit :: Integral a => a -> a
-firstDigit n = if n < 10 then n else firstDigit (div n 10)
+firstDigit n 
+    | n < 10 && n > (-10) = abs n 
+    | otherwise = firstDigit (div n modulus)
+    where modulus = if n < 0 then (-10) else 10
 
 
 {-
