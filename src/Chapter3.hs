@@ -344,6 +344,8 @@ of a book, but you are not limited only by the book properties we described.
 Create your own book type of your dreams!
 -}
 
+data Book = MkBook { bookName :: String,
+                     bookAuthor :: String} deriving (Show)
 {- |
 =⚔️= Task 2
 
@@ -373,6 +375,32 @@ after the fight. The battle has the following possible outcomes:
    doesn't earn any money and keeps what they had before.
 
 -}
+
+type Health = Int
+type Attack = Int
+type Gold = Int
+data Knight = Knight Health Attack Gold
+data Monster = Monster Health Attack Gold
+
+fight :: Monster -> Knight -> Gold
+fight m@(Monster mh ma mg) k@(Knight kh ka kg)
+    | mAfterHealth < 0 = kg + mg
+    | afterHealth < 0 = -1
+    | otherwise = kg
+    where
+        ma@(Monster mAfterHealth _ _) = knightHit m k
+        (Knight afterHealth _ _) = monsterHit ma k
+
+knightHit :: Monster -> Knight -> Monster
+knightHit (Monster mh ma mg) (Knight kh ka kg) 
+    = (Monster (mh - ka) ma mg)
+
+monsterHit :: Monster -> Knight -> Knight
+monsterHit (Monster mh ma mg) (Knight kh ka kg) 
+    | mh > 0 = (Knight (kh - ma) ka kg)
+    | otherwise = (Knight kh ka kg) 
+
+
 
 {- |
 =🛡= Sum types
@@ -459,6 +487,7 @@ and provide more flexibility when working with data types.
 Create a simple enumeration for the meal types (e.g. breakfast). The one who
 comes up with the most number of names wins the challenge. Use your creativity!
 -}
+data Meal = Breakfast | Brunch | Lunch | Supper
 
 {- |
 =⚔️= Task 4
@@ -479,7 +508,39 @@ After defining the city, implement the following functions:
    complicated task, walls can be built only if the city has a castle
    and at least 10 living __people__ inside in all houses of the city totally.
 -}
+type People = Int
+type Name = String
 
+data Wall = NoWall | Wall
+data Castle = NoCastle | Castle Name Wall
+data Building = Church | Library
+data House = House People
+
+data City = City Castle Building [House]
+
+buildCastle :: City -> Name -> City
+buildCastle (City NoCastle building house) name
+    = City (Castle name NoWall) building house
+buildCastle (City (Castle _ wall) building house) name
+    = City (Castle name wall) building house
+
+buildHouse :: City -> House -> City
+buildHouse (City castle building houses) house
+    = City castle building (house:houses)
+
+buildWall :: City -> City
+buildWall city@(City (Castle _ Wall) _ _) = city
+buildWall city@(City (Castle name _) building houses)
+    | allPeople > 10 = (City (Castle name Wall) building houses)
+    | otherwise = city
+        where
+            allPeople = sumPeople houses
+
+getPeople :: House -> People
+getPeople (House people) = people
+
+sumPeople :: [House] -> People
+sumPeople houses = foldr (+) 0 (fmap getPeople houses)
 {-
 =🛡= Newtypes
 
