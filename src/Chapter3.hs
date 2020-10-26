@@ -753,6 +753,14 @@ parametrise data types in places where values can be of any general type.
   maybe-treasure ;)
 -}
 
+data Dragon a = Dragon a
+data TreasureChest x = TreasureChest
+    { treasureChestGold :: Int
+    , treasureChestLoot :: x
+    }
+
+data Lair a b = Lair (Dragon a) (TreasureChest b)
+
 {-
 =🛡= Typeclasses
 
@@ -907,8 +915,29 @@ Implement instances of "Append" for the following types:
   ✧ *(Challenge): "Maybe" where append is appending of values inside "Just" constructors
 
 -}
+newtype Gold = Gold Int deriving (Show)
+
+data List a = 
+    Empty |
+    Cons a (List a)
+
 class Append a where
     append :: a -> a -> a
+
+instance Append Gold where
+    append (Gold lhs) (Gold rhs) = Gold (lhs + rhs)
+
+instance (Append a) => Append (List a) where
+    append Empty Empty = Empty
+    append list Empty = list
+    append Empty list = list
+    append left (Cons x rest) = append (Cons x left) rest
+
+instance Append a => Append (Maybe a) where
+    append (Just x) (Just y) = Just (append x y)
+    append (Just x) Nothing = Just x
+    append Nothing (Just x) = Just x
+    append Nothing Nothing = Nothing
 
 
 {-
