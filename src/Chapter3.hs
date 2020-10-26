@@ -1078,6 +1078,28 @@ implement the following functions:
 🕯 HINT: to implement this task, derive some standard typeclasses
 -}
 
+data Day =
+    Monday |
+    Tuesday |
+    Wednesday |
+    Thursday |
+    Friday |
+    Saturday |
+    Sunday deriving (Show, Eq, Ord, Enum)
+
+isWeekend :: Day -> Bool
+isWeekend Saturday = True
+isWeekend Sunday = True
+isWeekend _ = False
+
+nextDay :: Day -> Day
+nextDay Sunday = Monday
+nextDay day = succ day
+
+daysToParty :: Day -> Int
+daysToParty Saturday = 0
+daysToParty Sunday = 0
+daysToParty day = 5 - fromEnum day 
 
 {-
 =💣= Task 9*
