@@ -492,19 +492,19 @@ data Meal = Breakfast | Brunch | Lunch | Dinner
 
 Define types to represent a magical city in the world! A typical city has:
 
-⍟ Optional castle with a name
+⍟ Optional castle with a __name__ (as 'String')
 ⍟ Wall, but only if the city has a castle
 ⍟ Church or library but not both
-⍟ Any number of houses. Each house has one, two, three or four people inside.
+⍟ Any number of houses. Each house has one, two, three or four __people__ inside.
 
 After defining the city, implement the following functions:
 
  ✦ buildCastle — build a castle in the city. If the city already has a castle,
-   the old castle is destroyed, and the new castle with the new name is built
- ✦ buildHouse — add new living house
+   the old castle is destroyed, and the new castle with the __new name__ is built
+ ✦ buildHouse — add a new living house
  ✦ buildWalls — build walls in the city. But since building walls is a
    complicated task, walls can be built only if the city has a castle
-   and at least 10 living people inside
+   and at least 10 living __people__ inside in all houses of the city totally.
 -}
 
 data City = City
@@ -832,15 +832,13 @@ parametrise data types in places where values can be of any general type.
   maybe-treasure ;)
 -}
 
-data DragonLair treasure power = DragonLair
-    { dragonLairChest :: Maybe (TreasureChest treasure)
-    , dragonLairDragonPower :: power
-    }
-
+data Dragon a = Dragon a
 data TreasureChest x = TreasureChest
     { treasureChestGold :: Int
     , treasureChestLoot :: x
     }
+
+data Lair a b = Lair (Dragon a) (TreasureChest b)
 
 {-
 =🛡= Typeclasses
@@ -996,24 +994,29 @@ Implement instances of "Append" for the following types:
   ✧ *(Challenge): "Maybe" where append is appending of values inside "Just" constructors
 
 -}
+newtype Gold = Gold Int deriving (Show)
+
+data List a = 
+    Empty |
+    Cons a (List a)
+
 class Append a where
     append :: a -> a -> a
 
-newtype Gold = Gold Int
-
 instance Append Gold where
-    append :: Gold -> Gold -> Gold
-    append (Gold x) (Gold y) = Gold (x + y)
+    append (Gold lhs) (Gold rhs) = Gold (lhs + rhs)
 
-instance Append [a] where
-    append :: [a] -> [a] -> [a]
-    append = (++)
+instance (Append a) => Append (List a) where
+    append Empty Empty = Empty
+    append list Empty = list
+    append Empty list = list
+    append left (Cons x rest) = append (Cons x left) rest
 
 instance Append a => Append (Maybe a) where
-    append :: Maybe a -> Maybe a -> Maybe a
-    append Nothing mx = mx
-    append mx Nothing = mx
     append (Just x) (Just y) = Just (append x y)
+    append (Just x) Nothing = Just x
+    append Nothing (Just x) = Just x
+    append Nothing Nothing = Nothing
 
 {-
 =🛡= Standard Typeclasses and Deriving
@@ -1075,29 +1078,6 @@ implement the following functions:
 🕯 HINT: to implement this task, derive some standard typeclasses
 -}
 
-data Weekday
-   = Mon
-   | Tue
-   | Wed
-   | Thu
-   | Fri
-   | Sat
-   | Sun
-   deriving (Show, Eq, Enum, Bounded)
-
-isWeekend :: Weekday -> Bool
-isWeekend wd = case wd of
-    Sat -> True
-    Sun -> True
-    _ -> False
-
-nextDay :: Weekday -> Weekday
-nextDay wd
-    | wd == maxBound = minBound
-    | otherwise = succ wd
-
-daysToParty :: Weekday -> Int
-daysToParty wd = abs (fromEnum wd - fromEnum Fri)
 
 {-
 =💣= Task 9*
