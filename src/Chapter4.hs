@@ -314,7 +314,7 @@ typeclasses for standard data types.
 -}
 data List a
     = Empty
-    | Cons a (List a)
+    | Cons a (List a) deriving Show
 
 instance Functor List where
     fmap :: (a -> b) -> List a -> List b
@@ -507,6 +507,26 @@ Implement the 'Applicative' instance for our 'List' type.
   type.
 -}
 
+instance Semigroup (List a) where
+    (<>) :: List a -> List a -> List a
+    (<>) Empty Empty = Empty
+    (<>) Empty (Cons y ys) = Cons y ys
+    (<>) (Cons x xs) Empty = Cons x xs
+    (<>) (Cons x xs) (Cons y ys) = (Cons x (mappend xs (Cons y ys)))
+
+instance Monoid (List a) where
+    mempty = Empty 
+    
+
+instance Applicative List where
+    pure :: a -> List a
+    pure a = Cons a Empty
+    (<*>) :: List (a -> b) -> List a -> List b
+    (<*>) Empty Empty = Empty
+    (<*>) Empty _ = Empty
+    (<*>) _ Empty = Empty
+    (<*>) (Cons f fs) rhs@(Cons x xs) = mappend (Cons (f x) (fmap f xs)) (fs <*> rhs) 
+
 
 {- |
 =🛡= Monad
@@ -618,7 +638,8 @@ Implement the 'Monad' instance for our 'Secret' type.
 -}
 instance Monad (Secret e) where
     (>>=) :: Secret e a -> (a -> Secret e b) -> Secret e b
-    (>>=) = error "bind Secret: Not implemented!"
+    (>>=) (Trap x) _ = Trap x
+    (>>=) (Reward x) f = f x
 
 {- |
 =⚔️= Task 7
@@ -628,6 +649,15 @@ Implement the 'Monad' instance for our lists.
 🕯 HINT: You probably will need to implement a helper function (or
   maybe a few) to flatten lists of lists to a single list.
 -}
+
+flattenList :: List (List a) -> List a
+flattenList Empty = Empty
+flattenList (Cons x (Cons y rest)) = x <> y <> (flattenList rest)
+
+instance Monad List where
+    (>>=) :: List a -> (a -> List b) -> List b
+    (>>=) Empty _ = Empty
+    (>>=) list f = flattenList (fmap f list)
 
 
 {- |
@@ -647,7 +677,11 @@ Can you implement a monad version of AND, polymorphic over any monad?
 🕯 HINT: Use "(>>=)", "pure" and anonymous function
 -}
 andM :: (Monad m) => m Bool -> m Bool -> m Bool
-andM = error "andM: Not implemented!"
+--andM lhs rhs = (&&) <$> lhs <*> rhs
+--andM lhs rhs = lhs >>= (\y -> (rhs >>= (\x -> pure (y && x))))
+andM lhs rhs = lhs >>= (\y -> if y == False then pure False else (rhs >>= (\x -> pure (y && x))))
+--andM lhs rhs = rhs >>= (lhs >>= (pure (&& True)))
+--andM lhs rhs = pure (rhs >>= (\y -> (lhs >>= (\x -> (x && y)))))
 
 {- |
 =🐉= Task 9*: Final Dungeon Boss
