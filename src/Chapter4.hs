@@ -725,6 +725,35 @@ Specifically,
  ❃ Implement the function to convert Tree to list
 -}
 
+data Tree a = Tree (Tree a) (Tree a) | Leaf a | EmptyTree deriving (Show)
+
+instance Functor Tree where
+    fmap :: (a -> b) -> Tree a -> Tree b
+    fmap _ EmptyTree = EmptyTree
+    fmap f (Leaf x) = Leaf (f x)
+    fmap f (Tree left right) = Tree (fmap f left) (fmap f right)
+
+isSymetric :: Tree a -> Bool
+isSymetric (Leaf _) = True
+isSymetric (Tree (Leaf _) (Leaf _)) = True
+isSymetric (Tree (EmptyTree) (Leaf _)) = False
+isSymetric (Tree (Leaf _) (EmptyTree)) = False
+isSymetric (Tree _ (Leaf _)) = False
+isSymetric (Tree (Leaf _) _) = False
+isSymetric (Tree _ EmptyTree) = False
+isSymetric (Tree EmptyTree _) = False
+isSymetric (Tree leftTree rightTree) = isSymetric leftTree && isSymetric rightTree
+
+
+reverseTree :: Tree a -> Tree a
+reverseTree (Leaf x) = Leaf x
+reverseTree EmptyTree = EmptyTree
+reverseTree (Tree (Leaf x) (Leaf y)) = (Tree (Leaf y) (Leaf x))
+reverseTree (Tree (EmptyTree) (Leaf y)) = (Tree (EmptyTree) (Leaf y))
+reverseTree (Tree (Leaf x) (EmptyTree)) = (Tree (Leaf x) (EmptyTree))
+reverseTree (Tree (EmptyTree) (EmptyTree)) = (Tree (EmptyTree) (EmptyTree))
+reverseTree (Tree left right) = (Tree (reverseTree right) (reverseTree left))
+
 
 {-
 You did it! Now it is time to open pull request with your changes
