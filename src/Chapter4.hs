@@ -754,6 +754,15 @@ reverseTree (Tree (Leaf x) (EmptyTree)) = (Tree (Leaf x) (EmptyTree))
 reverseTree (Tree (EmptyTree) (EmptyTree)) = (Tree (EmptyTree) (EmptyTree))
 reverseTree (Tree left right) = (Tree (reverseTree right) (reverseTree left))
 
+treeToList :: Tree a -> [a]
+treeToList tree = treeToList' tree []
+
+treeToList' :: Tree a -> [a] -> [a]
+treeToList' (Leaf a) list = [a] ++ list
+treeToList' EmptyTree list = list
+treeToList' (Tree left right) list = treeToList left ++ treeToList right ++ list
+
+
 
 {-
 You did it! Now it is time to open pull request with your changes
