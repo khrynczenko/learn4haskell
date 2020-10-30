@@ -491,9 +491,8 @@ instance Applicative (Secret e) where
     pure = Reward
     (<*>) :: Secret e (a -> b) -> Secret e a -> Secret e b
     (<*>) (Trap x) (Trap _) = Trap x
-    (<*>) (Reward _) (Trap x) = Trap x
     (<*>) (Trap x) (Reward _) = Trap x
-    (<*>) (Reward f) (Reward x) = Reward (f x)
+    (<*>) (Reward f) secret = fmap f secret
 
 {- |
 =⚔️= Task 5
@@ -509,8 +508,7 @@ Implement the 'Applicative' instance for our 'List' type.
 
 instance Semigroup (List a) where
     (<>) :: List a -> List a -> List a
-    (<>) Empty Empty = Empty
-    (<>) Empty (Cons y ys) = Cons y ys
+    (<>) Empty list = list
     (<>) (Cons x xs) Empty = Cons x xs
     (<>) (Cons x xs) (Cons y ys) = (Cons x (mappend xs (Cons y ys)))
 
@@ -656,7 +654,6 @@ flattenList (Cons x (Cons y rest)) = x <> y <> (flattenList rest)
 
 instance Monad List where
     (>>=) :: List a -> (a -> List b) -> List b
-    (>>=) Empty _ = Empty
     (>>=) list f = flattenList (fmap f list)
 
 
@@ -677,11 +674,7 @@ Can you implement a monad version of AND, polymorphic over any monad?
 🕯 HINT: Use "(>>=)", "pure" and anonymous function
 -}
 andM :: (Monad m) => m Bool -> m Bool -> m Bool
---andM lhs rhs = (&&) <$> lhs <*> rhs
---andM lhs rhs = lhs >>= (\y -> (rhs >>= (\x -> pure (y && x))))
-andM lhs rhs = lhs >>= (\y -> if y == False then pure False else (rhs >>= (\x -> pure (y && x))))
---andM lhs rhs = rhs >>= (lhs >>= (pure (&& True)))
---andM lhs rhs = pure (rhs >>= (\y -> (lhs >>= (\x -> (x && y)))))
+andM lhs rhs = lhs >>= (\y -> if y then rhs else pure False)
 
 {- |
 =🐉= Task 9*: Final Dungeon Boss
